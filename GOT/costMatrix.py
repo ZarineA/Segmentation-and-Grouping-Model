@@ -1,4 +1,5 @@
-from shapesimilarity import shape_similarity, shape_similarity3D
+# from shapesimilarity import shape_similarity, shape_similarity3D
+from shapesimilarity import shape_similarity
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
@@ -53,7 +54,8 @@ def cost(file1x=None, file1y=None,file1z=None, file2x=None, file2y=None,file2z=N
         shape2 = np.column_stack((mu2x_bc, mu2y_bc, mu2z_bc))
 
     if file1z != None:
-        similarity = shape_similarity3D(shape1, shape2,checkRotation=False) #* checkRotation=True allows the method to don't take into account the orientation of the movements #* checkRotation=True allows the method to don't take into account the orientation of the movements
+        # similarity = shape_similarity3D(shape1, shape2,checkRotation=False) #* checkRotation=True allows the method to don't take into account the orientation of the movements #* checkRotation=True allows the method to don't take into account the orientation of the movements
+        similarity = shape_similarity(shape1, shape2,checkRotation=False) #* checkRotation=True allows the method to don't take into account the orientation of the movements #* checkRotation=True allows the method to don't take into account the orientation of the movements
         if plot==True:
             plotShape3D(shape1, shape2, similarity)
         return similarity, shape1, shape2

@@ -4,7 +4,7 @@ from mpl_toolkits import mplot3d
 from sklearn.cluster import DBSCAN
 
 from utils import *
-import drawData as scr2
+import drawData2D as scr2
 import downsampling as ds
 import time as t
 
