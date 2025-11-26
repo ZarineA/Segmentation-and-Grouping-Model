@@ -81,11 +81,11 @@ export default function HomeScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.leftPanel}>
         <ThemedView style={styles.controlsContainer}>
-          <ThemedView style={styles.topContainer}>
-            <ThemedText style={styles.text}>
-              You have inputted {demos.length} demonstration
-              {demos.length > 1 && "s"}
-            </ThemedText>
+          <ThemedText style={styles.text}>
+            You have inputted {demos.length} demonstration
+            {demos.length > 1 && "s"}
+          </ThemedText>
+          <ThemedView style={styles.buttonsContainer}>
             <ThemedLink
               href="/modal"
               title="Save demonstrations to .h5 file"
@@ -96,12 +96,12 @@ export default function HomeScreen() {
               disabled={demos.length === 0}
               onPress={() => setShowSmooth(!showSmooth)}
             />
+            <ThemedButton
+              title="Restart"
+              disabled={demos.length === 0}
+              onPress={reset}
+            />
           </ThemedView>
-          <ThemedButton
-            title="Restart"
-            disabled={demos.length === 0}
-            onPress={reset}
-          />
         </ThemedView>
       </SafeAreaView>
       <SafeAreaView style={styles.centralPanel}>
@@ -183,10 +183,10 @@ const styles = StyleSheet.create({
   controlsContainer: {
     flex: 1,
     flexDirection: "column",
-    justifyContent: "space-between",
+    justifyContent: "space-evenly",
   },
-  topContainer: {
-    gap: 30,
+  buttonsContainer: {
+    gap: 60,
   },
   text: {
     textAlign: "center",
