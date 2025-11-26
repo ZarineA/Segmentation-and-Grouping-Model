@@ -325,7 +325,7 @@ def calc_prob_from_segments(list_of_list_of_segments, data_len, window_size, plo
 
 
 
-def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n_samples=10, n_pass=2, plot=False):
+def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n_samples=10, n_pass=2, plot=False, mode="original"):
     """
     Combines segments probabilistically to generate keypoints.
     Args:
@@ -374,72 +374,59 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     print('Sorted Keypoints',sorted_keys)
 
     # ------- ORIGINAL ------------
-    final_keys = []
-    cur_key = 0
-    cur_key_group = []
-    min_dist = 290
-    n_pass=2
-    for i in range(len(sorted_keys)):
-        if sorted_keys[i] <= cur_key + min_dist:
-            cur_key_group.append(sorted_keys[i])
-        else:
-            if len(cur_key_group) >= n_pass:
-                final_keys.append(int(np.mean(cur_key_group)))
-                print("Valor de final keys",final_keys)
-            cur_key = sorted_keys[i]
-            cur_key_group = [cur_key]
-    if len(cur_key_group) >= n_pass:
-        final_keys.append(int(np.mean(cur_key_group)))
-    # -----------------------------
-
-    # ------- MAX GAP -------------
-    # epsilon = 0.6 * data_len/n_peaks
-    # final_keys = []
-    # prev_key = sorted_keys[0]
-    # cur_key_group = [prev_key]
-    # for i in range(len(sorted_keys)):
-    #     if sorted_keys[i] <= prev_key + epsilon:
-    #         cur_key_group.append(sorted_keys[i])
-    #     else:
-    #         if len(cur_key_group) >= n_pass:
-    #             final_keys.append(int(np.mean(cur_key_group)))
-    #         cur_key_group = [sorted_keys[i]]
-    #     prev_key = sorted_keys[i]
-    # if len(cur_key_group) >= n_pass:
-    #     final_keys.append(int(np.mean(cur_key_group)))
+    if mode == "original":
+        final_keys = []
+        cur_key = 0
+        cur_key_group = []
+        min_dist = 290
+        n_pass=2
+        for i in range(len(sorted_keys)):
+            if sorted_keys[i] <= cur_key + min_dist:
+                cur_key_group.append(sorted_keys[i])
+            else:
+                if len(cur_key_group) >= n_pass:
+                    final_keys.append(int(np.mean(cur_key_group)))
+                    print("Valor de final keys",final_keys)
+                cur_key = sorted_keys[i]
+                cur_key_group = [cur_key]
+        if len(cur_key_group) >= n_pass:
+            final_keys.append(int(np.mean(cur_key_group)))
     # -----------------------------
     
     # ------- DBSCAN --------------
-    # epsilon = 0.6 * data_len/n_peaks
-    # final_keys = []
-    # dbscan = DBSCAN(eps=epsilon, min_samples=n_pass)
-    # labels = dbscan.fit_predict(np.array(sorted_keys).reshape(-1, 1))
-    # cur_label = None
-    # cur_key_group = []
-    # for i in range(len(sorted_keys)):
-    #     if labels[i] == cur_label:
-    #         cur_key_group.append(sorted_keys[i])
-    #     else:
-    #         if cur_label is not None:
-    #             final_keys.append(int(np.mean(cur_key_group)))
-    #             cur_key_group = []
-    #             cur_label = None
-    #         if labels[i] > -1:
-    #             cur_key_group = [sorted_keys[i]]
-    #             cur_label = labels[i]
-    # if cur_label is not None:
-    #     final_keys.append(int(np.mean(cur_key_group)))
+    if mode == "dbscan":
+        epsilon = 0.6 * data_len/n_peaks
+        final_keys = []
+        dbscan = DBSCAN(eps=epsilon, min_samples=n_pass)
+        labels = dbscan.fit_predict(np.array(sorted_keys).reshape(-1, 1))
+        cur_label = None
+        cur_key_group = []
+        for i in range(len(sorted_keys)):
+            if labels[i] == cur_label:
+                cur_key_group.append(sorted_keys[i])
+            else:
+                if cur_label is not None:
+                    final_keys.append(int(np.mean(cur_key_group)))
+                    cur_key_group = []
+                    cur_label = None
+                if labels[i] > -1:
+                    cur_key_group = [sorted_keys[i]]
+                    cur_label = labels[i]
+        if cur_label is not None:
+            final_keys.append(int(np.mean(cur_key_group)))
     # -----------------------------
 
     # ------ K MEANS --------------
-    # k = int(n_peaks/data_len * 400)
-    # kmeans = KMeans(n_clusters=k, random_state=42).fit(np.array(sorted_keys).reshape(-1, 1))
-    # final_keys = [int(center) for center in sorted(kmeans.cluster_centers_)]
+    if mode == "kmeans":
+        k = int(n_peaks/data_len * 400)
+        kmeans = KMeans(n_clusters=k, random_state=42).fit(np.array(sorted_keys).reshape(-1, 1))
+        final_keys = [int(center) for center in sorted(kmeans.cluster_centers_)]
     # -----------------------------
 
-    # min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys)))/2
-    # print("min_dist:", min_dist)
-    # print("epsilon:", 0.6 * data_len/n_peaks)
+    if mode != "original":
+        min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys)))/2
+        print("min_dist:", min_dist)
+        print("epsilon:", 0.6 * data_len/n_peaks)
 
     keypoints = np.insert(final_keys, 0, int(0))
     keypoints = np.append(keypoints, int(data_len))
@@ -661,27 +648,34 @@ if __name__ == '__main__':
         # Concatenar todos los segmentos en un solo array
         #all_segments_flat = np.concatenate(all_segments).reshape(-1, 1)
         segments = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2)
+        segmentsDbscan = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2, mode="dbscan")
+        segmentsKmeans = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2, mode="kmeans")
         #segments = all_segments
         print('Final Segments')
         # Figura para visualizar los segmentos
-        fig = plt.figure(figsize=(6, 6))
-        for j in range(len(all_demos)):
-            demo = all_demos[j]
-            demo_segments = []
-            
-            for i in range(len(segments)-1):
-                segment = demo[segments[i]:segments[i+1], :]
-                demo_segments.append(segment)
-                
-                # Dibujar cada segmento con su color
-                plt.plot(demo[segments[i]:segments[i+1], 0], demo[segments[i]:segments[i+1], 1], lw=5, c=colors[i], label="Segment " + str(i+1) if j == 0 else "")
-                plt.xticks([])
-                plt.yticks([])
-                plt.legend(loc='lower center')
-            
-            # Guardar los segmentos de esta demo en la lista segment_data
-            segment_data.append(demo_segments)
 
+        fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+        all_segments = [segments, segmentsDbscan, segmentsKmeans]
+        titles = ["Sliding Window (theirs)", "DBSCAN (mine)", "K Means (mine)"]
+        for ax, segments, title in zip(axes, all_segments, titles):
+            for j in range(len(all_demos)):
+                demo = all_demos[j]
+
+                for i in range(len(segments) - 1):
+                    ax.plot(
+                        demo[segments[i]:segments[i+1], 0],
+                        demo[segments[i]:segments[i+1], 1],
+                        lw=5,
+                        c=colors[i],
+                        label="Segment " + str(i+1) if j == 0 else ""
+                    )
+                
+            ax.set_xticks([])
+            ax.set_yticks([])
+            # ax.legend(loc="lower center")
+            ax.set_title(title)
+
+        plt.tight_layout()
         plt.show()
     
     # Nombre de la carpeta donde guardaremos los archivos de los segmentos
