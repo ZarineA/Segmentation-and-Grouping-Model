@@ -13,8 +13,12 @@ import { ThemedButton } from "@/components/themed-button";
 type Traj = [number[], number[], number[]];
 
 export default function HomeScreen() {
+  // amount to resample for smoothing
+  const numResample = 1000;
+
   const canvasColor = useThemeColor({}, "backgroundSecondary");
   const dotsColor = useThemeColor({}, "text");
+  const dotsColorFaded = useThemeColor({}, "disabled");
 
   const [demos, setDemos] = useState<Traj[]>([]);
   const [smoothed, setSmoothed] = useState<Traj[]>([]);
@@ -31,14 +35,16 @@ export default function HomeScreen() {
   const recording = useRef(false);
 
   const reset = () => {
-    setCurrentPoints([]);
-    setSmoothed([]);
     setDemos([]);
+    setSmoothed([]);
+    setShowSmooth(false);
+    setCurrentPoints([]);
   };
 
   const handleEnd = (traj: Traj) => {
     setDemos((prev) => [...prev, traj]);
-    setSmoothed((prev) => [...prev, smoothTrajectory(traj, 1000)]);
+    setSmoothed((prev) => [...prev, smoothTrajectory(traj, numResample)]);
+    setCurrentPoints([]);
   };
 
   const handleUpdate = (point: { x: number; y: number }) => {
@@ -51,13 +57,11 @@ export default function HomeScreen() {
       T.current = [];
       X.current = [];
       Y.current = [];
-      scheduleOnRN(setCurrentPoints, []);
     })
     .onUpdate((e) => {
       if (!recording.current) return;
       const { x, y } = e;
-      if (x < 0 || y < 0)
-        return;
+      if (x < 0 || y < 0) return;
 
       const t = Date.now();
       T.current.push(t);
@@ -111,8 +115,7 @@ export default function HomeScreen() {
                     cx={x}
                     cy={demo[2][j]}
                     r={3}
-                    fill={dotsColor}
-                    opacity={0.2}
+                    fill={dotsColorFaded}
                   />
                 ))
               )}
@@ -134,23 +137,30 @@ export default function HomeScreen() {
   );
 }
 
+function linspace(start: number, end: number, num: number): number[] {
+  const step = (end - start) / (num - 1);
+  return Array.from({ length: num }, (_, i) => start + i * step);
+}
+
+function interpolate(xs: number[], ys: number[], x: number): number {
+  for (let i = 0; i < xs.length - 1; i++) {
+    if (x >= xs[i] && x <= xs[i + 1]) {
+      const t = (x - xs[i]) / (xs[i + 1] - xs[i]);
+      return ys[i] + t * (ys[i + 1] - ys[i]);
+    }
+  }
+  return ys[ys.length - 1];
+}
+
 function smoothTrajectory(traj: Traj, samples: number): Traj {
   const [T, X, Y] = traj;
   if (T.length < 2) return traj;
 
-  const smoothX: number[] = [];
-  const smoothY: number[] = [];
-  const smoothT: number[] = [];
+  const tt = linspace(T[0], T[T.length - 1], samples);
+  const xx = tt.map((t) => interpolate(T, X, t));
+  const yy = tt.map((t) => interpolate(T, Y, t));
 
-  const step = Math.max(1, Math.floor(T.length / samples));
-
-  for (let i = 0; i < T.length; i += step) {
-    smoothT.push(T[i]);
-    smoothX.push(X[i]);
-    smoothY.push(Y[i]);
-  }
-
-  return [smoothT, smoothX, smoothY];
+  return [tt, xx, yy];
 }
 
 const styles = StyleSheet.create({
