@@ -19,9 +19,9 @@ export function smoothTrajectory(traj: Traj, samples: number): Traj {
   const [T, X, Y] = traj;
   if (T.length < 2) return traj;
 
-  const tt = linspace(T[0], T[T.length - 1], samples);
-  const xx = tt.map((t) => interpolate(T, X, t));
-  const yy = tt.map((t) => interpolate(T, Y, t));
+  const tt = linspace(T[0], T[T.length - 1], samples + 1);
+  const xx = tt.map((t) => interpolate(T, X, t)).slice(1);
+  const yy = tt.map((t) => interpolate(T, Y, t)).slice(1);
 
-  return [tt, xx, yy];
+  return [tt.slice(1), xx, yy];
 }

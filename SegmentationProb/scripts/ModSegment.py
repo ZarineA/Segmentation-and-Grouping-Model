@@ -551,7 +551,7 @@ def main3d(i):
 #Example process using a 2D trajectory with a single data stream
 def main2d(i):
     np.random.seed(6)
-    [[sm_t, sm_x, sm_y], [unsm_t, unsm_x, unsm_y], [norm_t, norm_x, norm_y]] = scr2.read_demo_h5('gal.h5', i) #* the second value indicates which demo to read
+    [[sm_t, sm_x, sm_y], [unsm_t, unsm_x, unsm_y], [norm_t, norm_x, norm_y]] = scr2.read_demo_json('stylus_demo.json', i) #* the second value indicates which demo to read
     norm_y = -norm_y
     demo = np.hstack((np.reshape(norm_x, (len(norm_x), 1)), np.reshape(norm_y, (len(norm_y), 1))))
     thresh = 0.16

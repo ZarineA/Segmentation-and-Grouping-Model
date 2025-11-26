@@ -4,6 +4,7 @@ import pygame
 from scipy.interpolate import UnivariateSpline
 import h5py
 from tkinter.filedialog import askopenfilename
+import json
 
 def inbounds(x, y, rect):
     return (x > rect[0]) and (x < (rect[0] + rect[2])) and (y > rect[1]) and (y < (rect[1] + rect[3]))
@@ -291,6 +292,22 @@ def read_demo_h5(fname, demo_num):
     norm_y = np.array(norm_demo.get('y'))
     fp.close()
     return [[sm_t, sm_x, sm_y], [unsm_t, unsm_x, unsm_y], [norm_t, norm_x, norm_y]]
+
+def read_demo_json(fname, demo_num):
+    path = '../json files/'
+    with open(path + fname, "r") as f:
+        data = json.load(f)
+
+    def get_traj(key):
+        demo = data[key][str(demo_num)]
+        sm_t = np.array(demo['t'])
+        sm_x = np.array(demo['x'])
+        sm_y = np.array(demo['y'])
+        return [sm_t, sm_x, sm_y]
+
+    print([get_traj("smoothed"), get_traj("unsmoothed"), get_traj("normalized")])
+
+    return [get_traj("smoothed"), get_traj("unsmoothed"), get_traj("normalized")]
 
 if __name__ == '__main__':
     obj = Screen_Capture()
