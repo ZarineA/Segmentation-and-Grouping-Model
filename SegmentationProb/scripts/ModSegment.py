@@ -312,7 +312,7 @@ def calc_prob_from_segments(list_of_list_of_segments, data_len, window_size, plo
     
     probabilities = np.ones((data_len,))
     for segment_list in list_of_list_of_segments:
-        segment_probabilities = calc_segment_prob(segment_list[1:], data_len, window_size, plot=True)
+        segment_probabilities = calc_segment_prob(segment_list[1:], data_len, window_size, plot)
         print("Segment probabilities",segment_probabilities)
         probabilities = probabilities * segment_probabilities
     probabilities = probabilities / np.sum(probabilities)
@@ -353,15 +353,16 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     probabilities)
     peaks = np.append(peaks,peaks2) """
     print(peaks)
-    plt.figure(figsize=(10, 5))
-    plt.plot(probabilities, label="Probabilidades", marker="o", linestyle="-")
-    plt.scatter(peaks, probabilities[peaks], color="red", label="Peaks", zorder=5)
-    plt.title("Peaks in probabilities distributions")
-    plt.xlabel("Index")
-    plt.ylabel("Probabilities")
-    plt.legend()
-    plt.grid(True, linestyle="--", alpha=0.7)
-    plt.show()
+    if plot:
+        plt.figure(figsize=(10, 5))
+        plt.plot(probabilities, label="Probabilidades", marker="o", linestyle="-")
+        plt.scatter(peaks, probabilities[peaks], color="red", label="Peaks", zorder=5)
+        plt.title("Peaks in probabilities distributions")
+        plt.xlabel("Index")
+        plt.ylabel("Probabilities")
+        plt.legend()
+        plt.grid(True, linestyle="--", alpha=0.7)
+        plt.show()
     
     
     keypoints=peaks
@@ -659,7 +660,7 @@ if __name__ == '__main__':
             print(f"Segmentos {i}:", segments)
         # Concatenar todos los segmentos en un solo array
         #all_segments_flat = np.concatenate(all_segments).reshape(-1, 1)
-        segments = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2, plot=True)
+        segments = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2)
         #segments = all_segments
         print('Final Segments')
         # Figura para visualizar los segmentos
