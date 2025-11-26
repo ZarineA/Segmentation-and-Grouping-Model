@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
-from sklearn.cluster import DBSCAN
+from sklearn.cluster import DBSCAN, KMeans
 
 from utils import *
 import drawData2D as scr2
@@ -365,18 +365,21 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     
     
     keypoints=peaks
+    n_peaks = len(peaks) / len(list_of_list_of_segments)
 
     sorted_keys = np.sort(keypoints)
     sorted_keys = np.insert(sorted_keys, 0, 0)
     sorted_keys = np.append(sorted_keys, data_len)
     print('Sorted Keypoints',sorted_keys)
+
+    # ------- ORIGINAL ------------
     final_keys = []
     cur_key = 0
     cur_key_group = []
-    window_size = 290
+    min_dist = 290
     n_pass=2
     for i in range(len(sorted_keys)):
-        if sorted_keys[i] <= cur_key + window_size:
+        if sorted_keys[i] <= cur_key + min_dist:
             cur_key_group.append(sorted_keys[i])
         else:
             if len(cur_key_group) >= n_pass:
@@ -386,13 +389,63 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
             cur_key_group = [cur_key]
     if len(cur_key_group) >= n_pass:
         final_keys.append(int(np.mean(cur_key_group)))
-    #* Evaluate the first and last group
+    # -----------------------------
+
+    # ------- MAX GAP -------------
+    # epsilon = 0.6 * data_len/n_peaks
+    # final_keys = []
+    # prev_key = sorted_keys[0]
+    # cur_key_group = [prev_key]
+    # for i in range(len(sorted_keys)):
+    #     if sorted_keys[i] <= prev_key + epsilon:
+    #         cur_key_group.append(sorted_keys[i])
+    #     else:
+    #         if len(cur_key_group) >= n_pass:
+    #             final_keys.append(int(np.mean(cur_key_group)))
+    #         cur_key_group = [sorted_keys[i]]
+    #     prev_key = sorted_keys[i]
+    # if len(cur_key_group) >= n_pass:
+    #     final_keys.append(int(np.mean(cur_key_group)))
+    # -----------------------------
+    
+    # ------- DBSCAN --------------
+    # epsilon = 0.6 * data_len/n_peaks
+    # final_keys = []
+    # dbscan = DBSCAN(eps=epsilon, min_samples=n_pass)
+    # labels = dbscan.fit_predict(np.array(sorted_keys).reshape(-1, 1))
+    # cur_label = None
+    # cur_key_group = []
+    # for i in range(len(sorted_keys)):
+    #     if labels[i] == cur_label:
+    #         cur_key_group.append(sorted_keys[i])
+    #     else:
+    #         if cur_label is not None:
+    #             final_keys.append(int(np.mean(cur_key_group)))
+    #             cur_key_group = []
+    #             cur_label = None
+    #         if labels[i] > -1:
+    #             cur_key_group = [sorted_keys[i]]
+    #             cur_label = labels[i]
+    # if cur_label is not None:
+    #     final_keys.append(int(np.mean(cur_key_group)))
+    # -----------------------------
+
+    # ------ K MEANS --------------
+    # k = int(n_peaks/data_len * 400)
+    # kmeans = KMeans(n_clusters=k, random_state=42).fit(np.array(sorted_keys).reshape(-1, 1))
+    # final_keys = [int(center) for center in sorted(kmeans.cluster_centers_)]
+    # -----------------------------
+
+    # min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys)))/2
+    # print("min_dist:", min_dist)
+    # print("epsilon:", 0.6 * data_len/n_peaks)
+
     keypoints = np.insert(final_keys, 0, int(0))
     keypoints = np.append(keypoints, int(data_len))
-    if abs(keypoints[0] - keypoints[1]) < window_size:
+    if abs(keypoints[0] - keypoints[1]) < min_dist:
         print(abs(keypoints[0] - keypoints[1]))
         keypoints=np.delete(keypoints,1)
-    if abs(keypoints[-1] - keypoints[-2]) < window_size:
+    if abs(keypoints[-1] - keypoints[-2]) < min_dist:
         keypoints=np.delete(keypoints,-2)
     
     print('Final Keypoints Obtained')
