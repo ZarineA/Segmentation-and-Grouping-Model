@@ -4,12 +4,13 @@ import { ThemedText } from "./themed-text";
 
 export function ThemedButton({ ...props }: ButtonProps) {
   const color = useThemeColor({}, props.disabled ? "disabled" : "tint");
+  const backgroundColor = useThemeColor({}, props.disabled ? "background" : "backgroundTernary")
 
   return (
     <TouchableOpacity {...props}>
       <ThemedText
         style={[
-          { borderColor: color, color },
+          { borderColor: color, color, backgroundColor },
           styles.default,
           props.disabled && styles.disabled,
         ]}

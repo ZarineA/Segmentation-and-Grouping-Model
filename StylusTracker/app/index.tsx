@@ -7,10 +7,9 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { ThemedLink } from "@/components/themed-link";
 import { ThemedButton } from "@/components/themed-button";
-
-type Traj = [number[], number[], number[]];
+import { Traj, smoothTrajectory } from "@/utils/trajectory";
+import { saveJsonFile } from "@/utils/file";
 
 export default function HomeScreen() {
   // amount to resample for smoothing
@@ -86,10 +85,10 @@ export default function HomeScreen() {
             {demos.length > 1 && "s"}
           </ThemedText>
           <ThemedView style={styles.buttonsContainer}>
-            <ThemedLink
-              href="/modal"
-              title="Save demonstrations to .h5 file"
+            <ThemedButton
+              title="Save demonstrations to JSON file"
               disabled={demos.length === 0}
+              onPress={() => saveJsonFile(demos, smoothed)}
             />
             <ThemedButton
               title="Display Smoothed"
@@ -135,32 +134,6 @@ export default function HomeScreen() {
       </SafeAreaView>
     </ThemedView>
   );
-}
-
-function linspace(start: number, end: number, num: number): number[] {
-  const step = (end - start) / (num - 1);
-  return Array.from({ length: num }, (_, i) => start + i * step);
-}
-
-function interpolate(xs: number[], ys: number[], x: number): number {
-  for (let i = 0; i < xs.length - 1; i++) {
-    if (x >= xs[i] && x <= xs[i + 1]) {
-      const t = (x - xs[i]) / (xs[i + 1] - xs[i]);
-      return ys[i] + t * (ys[i + 1] - ys[i]);
-    }
-  }
-  return ys[ys.length - 1];
-}
-
-function smoothTrajectory(traj: Traj, samples: number): Traj {
-  const [T, X, Y] = traj;
-  if (T.length < 2) return traj;
-
-  const tt = linspace(T[0], T[T.length - 1], samples);
-  const xx = tt.map((t) => interpolate(T, X, t));
-  const yy = tt.map((t) => interpolate(T, Y, t));
-
-  return [tt, xx, yy];
 }
 
 const styles = StyleSheet.create({
