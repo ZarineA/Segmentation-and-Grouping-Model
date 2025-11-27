@@ -11,6 +11,7 @@ import time as t
 from sklearn.mixture import GaussianMixture
 from scipy.signal import find_peaks
 import os
+import sys
 
 
 
@@ -539,9 +540,10 @@ def main3d(i):
     return segments,traj_pos
 
 #Example process using a 2D trajectory with a single data stream
-def main2d(i):
+def main2d(i, file_name):
     np.random.seed(6)
-    [[sm_t, sm_x, sm_y], [unsm_t, unsm_x, unsm_y], [norm_t, norm_x, norm_y]] = scr2.read_demo_h5('gal.h5', i) #* the second value indicates which demo to read
+    read_function = scr2.read_demo_h5 if file_name.split(".")[-1] == "h5" else scr2.read_demo_json
+    [[sm_t, sm_x, sm_y], [unsm_t, unsm_x, unsm_y], [norm_t, norm_x, norm_y]] = read_function(file_name, i) #* the second value indicates which demo to read
     norm_y = -norm_y
     demo = np.hstack((np.reshape(norm_x, (len(norm_x), 1)), np.reshape(norm_y, (len(norm_y), 1))))
     thresh = 0.16
@@ -641,9 +643,12 @@ if __name__ == '__main__':
         
     #? Segmentation in 2D
     elif mode == 2:
-        for i in range(3): #* Number of demos
+        file_name = sys.argv[1]
+        extension = file_name.split(".")[-1]
+        nb_demos = scr2.get_nb_demos_h5(file_name) if extension == "h5" else scr2.get_nb_demos_json(file_name)
+        for i in range(nb_demos): #* Number of demos
             # print(f"Demo {i}")
-            segments,demo = main2d(i=i)
+            segments,demo = main2d(i, file_name)
             all_segments.append(segments)
             all_demos.append(demo)
             # print(f"Segmentos {i}:", segments)

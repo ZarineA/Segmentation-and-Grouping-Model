@@ -307,6 +307,20 @@ def read_demo_json(fname, demo_num):
 
     return [get_traj("smoothed"), get_traj("unsmoothed"), get_traj("normalized")]
 
+def get_nb_demos_h5(fname):
+    path = '../h5 files/'
+    fp = h5py.File(path + fname, 'r')
+    smooth = fp.get('smoothed')
+    return len(list(smooth.keys()))
+
+
+def get_nb_demos_json(fname):
+    path = '../json files/'
+    with open(path + fname, "r") as f:
+        data = json.load(f)
+    smooth = data["smoothed"]
+    return len(smooth)
+
 if __name__ == '__main__':
     obj = Screen_Capture()
     obj.capture()
