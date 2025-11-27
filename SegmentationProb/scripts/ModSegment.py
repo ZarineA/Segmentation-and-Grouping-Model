@@ -366,12 +366,16 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     
     
     keypoints=peaks
-    n_peaks = len(peaks) / len(list_of_list_of_segments)
 
     sorted_keys = np.sort(keypoints)
     sorted_keys = np.insert(sorted_keys, 0, 0)
     sorted_keys = np.append(sorted_keys, data_len)
     # print('Sorted Keypoints',sorted_keys)
+    
+    n_seg = 0
+    for list_of_segments in list_of_list_of_segments:
+        n_seg += len(list_of_segments)
+    avg_n_seg = n_seg / len(list_of_list_of_segments)
 
     # ------- ORIGINAL ------------
     if mode == "original":
@@ -395,7 +399,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     
     # ------- DBSCAN --------------
     if mode == "dbscan":
-        epsilon = 0.6 * data_len/n_peaks
+        epsilon = 0.6 * data_len/avg_n_seg
         final_keys = []
         dbscan = DBSCAN(eps=epsilon, min_samples=n_pass)
         labels = dbscan.fit_predict(np.array(sorted_keys).reshape(-1, 1))
@@ -418,7 +422,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
 
     # ------ K MEANS --------------
     if mode == "kmeans":
-        k = max(1, int(n_peaks/data_len * 400))
+        k = max(1, int(avg_n_seg/data_len * 300))
         kmeans = KMeans(n_clusters=k, random_state=42).fit(np.array(sorted_keys).reshape(-1, 1))
         final_keys = [int(center) for center in sorted(kmeans.cluster_centers_)]
     # -----------------------------
