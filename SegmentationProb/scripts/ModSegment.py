@@ -400,7 +400,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     
     # ------- DBSCAN --------------
     if mode == "dbscan":
-        epsilon = 0.6 * data_len/avg_n_seg
+        epsilon = 2 * data_len/len(peaks)
         final_keys = []
         dbscan = DBSCAN(eps=epsilon, min_samples=n_pass)
         labels = dbscan.fit_predict(np.array(sorted_keys).reshape(-1, 1))
@@ -429,7 +429,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     # -----------------------------
 
     if mode != "original":
-        min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys)))/2
+        min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys))) * 1.1
 
     keypoints = np.insert(final_keys, 0, int(0))
     keypoints = np.append(keypoints, int(data_len))
