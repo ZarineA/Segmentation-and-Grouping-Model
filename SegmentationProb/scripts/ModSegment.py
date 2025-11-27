@@ -691,40 +691,40 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.show()
     
-    # Nombre de la carpeta donde guardaremos los archivos de los segmentos
-    folder_name = 'SegmentsFolder'
+    # # Nombre de la carpeta donde guardaremos los archivos de los segmentos
+    # folder_name = 'SegmentsFolder'
 
-    # Crear la carpeta si no existe
-    if not os.path.exists(folder_name):
-        os.makedirs(folder_name)
+    # # Crear la carpeta si no existe
+    # if not os.path.exists(folder_name):
+    #     os.makedirs(folder_name)
 
-    # Suponiendo que all_demos es una lista de matrices, donde cada matriz tiene las coordenadas (x, y, z).
-    # Y que segments es una lista de índices que define cómo se dividen las demostraciones en segmentos.
+    # # Suponiendo que all_demos es una lista de matrices, donde cada matriz tiene las coordenadas (x, y, z).
+    # # Y que segments es una lista de índices que define cómo se dividen las demostraciones en segmentos.
 
-    # Variable para contar segmentos
-    segment_count = 0
+    # # Variable para contar segmentos
+    # segment_count = 0
 
 
-    for i in range(len(segments) - 1):
-        segmentedData = []
-        for j in range(len(all_demos)):
+    # for i in range(len(segments) - 1):
+    #     segmentedData = []
+    #     for j in range(len(all_demos)):
             
-            # Extraer el segmento de la demo actual
-            segment = all_demos[j][segments[i]:segments[i + 1]]
-            segmentedData.append(segment)
-            # Definir el nombre del archivo para este segmento
-        segmentedData = np.concatenate(segmentedData, axis=0)    
-        filename = f'segmento{i+1}.txt'  # Segmento se numera de acuerdo a la cuenta
+    #         # Extraer el segmento de la demo actual
+    #         segment = all_demos[j][segments[i]:segments[i + 1]]
+    #         segmentedData.append(segment)
+    #         # Definir el nombre del archivo para este segmento
+    #     segmentedData = np.concatenate(segmentedData, axis=0)    
+    #     filename = f'segmento{i+1}.txt'  # Segmento se numera de acuerdo a la cuenta
         
-        # Ruta del archivo
-        file_path = os.path.join(folder_name, filename)
+    #     # Ruta del archivo
+    #     file_path = os.path.join(folder_name, filename)
         
-        # Abrir el archivo en modo escritura
-        with open(file_path, 'w') as f:
-            # Escribir las coordenadas x, y, z en el archivo
-            np.savetxt(f, segmentedData, comments='', fmt='%.6f')  # Ajustar formato si es necesario
+    #     # Abrir el archivo en modo escritura
+    #     with open(file_path, 'w') as f:
+    #         # Escribir las coordenadas x, y, z en el archivo
+    #         np.savetxt(f, segmentedData, comments='', fmt='%.6f')  # Ajustar formato si es necesario
             
-        print(f'Segmento guardado: {file_path}')
+    #     print(f'Segmento guardado: {file_path}')
 
     
     
