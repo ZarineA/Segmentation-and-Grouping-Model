@@ -305,8 +305,6 @@ def read_demo_json(fname, demo_num):
         sm_y = np.array(demo['y'])
         return [sm_t, sm_x, sm_y]
 
-    print([get_traj("smoothed"), get_traj("unsmoothed"), get_traj("normalized")])
-
     return [get_traj("smoothed"), get_traj("unsmoothed"), get_traj("normalized")]
 
 if __name__ == '__main__':

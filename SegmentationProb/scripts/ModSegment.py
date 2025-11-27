@@ -108,7 +108,7 @@ def detect_brutal_changes(data, change_threshold, segment_size,acceleration):
     - segments (list): A list of indices marking the start of each segment.
     """
     jerk_diff = np.abs(np.diff(data))
-    print("Jerk diff",jerk_diff)
+    # print("Jerk diff",jerk_diff)
     segments = []
     start_index = 0
     data_prev = acceleration[0]
@@ -122,7 +122,7 @@ def detect_brutal_changes(data, change_threshold, segment_size,acceleration):
     else:
         segments.append(i+1) #* Add the last point
 
-    print("Segmentos detectados:", segments)
+    # print("Segmentos detectados:", segments)
     return segments
 
 
@@ -144,8 +144,8 @@ def count_thresh(data, threshold, segment_size, grace_threshold,acceleration):
     grace_threshold = 10
     data_prev = acceleration[0]
     for i in range(len(data)):
-        print("Data en i",data[i])
-        print("Threshold",threshold)
+        # print("Data en i",data[i])
+        # print("Threshold",threshold)
         if data[i] >= threshold and (np.sign(acceleration[i]) != np.sign(data_prev)):
             segments.append(i)
         else:
@@ -155,7 +155,7 @@ def count_thresh(data, threshold, segment_size, grace_threshold,acceleration):
                 grace_count = grace_count + 1
                 count = count + 1
         data_prev = acceleration[i]
-    print("Segmentos en thresh",segments)
+    # print("Segmentos en thresh",segments)
     
     return segments
 
@@ -313,7 +313,7 @@ def calc_prob_from_segments(list_of_list_of_segments, data_len, window_size, plo
     probabilities = np.ones((data_len,))
     for segment_list in list_of_list_of_segments:
         segment_probabilities = calc_segment_prob(segment_list[1:], data_len, window_size, plot)
-        print("Segment probabilities",segment_probabilities)
+        # print("Segment probabilities",segment_probabilities)
         probabilities = probabilities * segment_probabilities
     probabilities = probabilities / np.sum(probabilities)
     if plot==True:
@@ -352,7 +352,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     """ peaks2, properties2 = find_peaks(
     probabilities)
     peaks = np.append(peaks,peaks2) """
-    print(peaks)
+    # print(peaks)
     if plot:
         plt.figure(figsize=(10, 5))
         plt.plot(probabilities, label="Probabilidades", marker="o", linestyle="-")
@@ -371,7 +371,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     sorted_keys = np.sort(keypoints)
     sorted_keys = np.insert(sorted_keys, 0, 0)
     sorted_keys = np.append(sorted_keys, data_len)
-    print('Sorted Keypoints',sorted_keys)
+    # print('Sorted Keypoints',sorted_keys)
 
     # ------- ORIGINAL ------------
     if mode == "original":
@@ -386,7 +386,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
             else:
                 if len(cur_key_group) >= n_pass:
                     final_keys.append(int(np.mean(cur_key_group)))
-                    print("Valor de final keys",final_keys)
+                    # print("Valor de final keys",final_keys)
                 cur_key = sorted_keys[i]
                 cur_key_group = [cur_key]
         if len(cur_key_group) >= n_pass:
@@ -418,26 +418,24 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
 
     # ------ K MEANS --------------
     if mode == "kmeans":
-        k = int(n_peaks/data_len * 400)
+        k = max(1, int(n_peaks/data_len * 400))
         kmeans = KMeans(n_clusters=k, random_state=42).fit(np.array(sorted_keys).reshape(-1, 1))
         final_keys = [int(center) for center in sorted(kmeans.cluster_centers_)]
     # -----------------------------
 
     if mode != "original":
         min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys)))/2
-        print("min_dist:", min_dist)
-        print("epsilon:", 0.6 * data_len/n_peaks)
 
     keypoints = np.insert(final_keys, 0, int(0))
     keypoints = np.append(keypoints, int(data_len))
     if abs(keypoints[0] - keypoints[1]) < min_dist:
-        print(abs(keypoints[0] - keypoints[1]))
+        # print(abs(keypoints[0] - keypoints[1]))
         keypoints=np.delete(keypoints,1)
     if abs(keypoints[-1] - keypoints[-2]) < min_dist:
         keypoints=np.delete(keypoints,-2)
     
-    print('Final Keypoints Obtained')
-    print(keypoints)
+    # print('Final Keypoints Obtained')
+    # print(keypoints)
     #keypoints = sorted_keys
     
     
@@ -539,7 +537,7 @@ def main3d(i):
 #Example process using a 2D trajectory with a single data stream
 def main2d(i):
     np.random.seed(6)
-    [[sm_t, sm_x, sm_y], [unsm_t, unsm_x, unsm_y], [norm_t, norm_x, norm_y]] = scr2.read_demo_json('stylus_demo.json', i) #* the second value indicates which demo to read
+    [[sm_t, sm_x, sm_y], [unsm_t, unsm_x, unsm_y], [norm_t, norm_x, norm_y]] = scr2.read_demo_h5('gal.h5', i) #* the second value indicates which demo to read
     norm_y = -norm_y
     demo = np.hstack((np.reshape(norm_x, (len(norm_x), 1)), np.reshape(norm_y, (len(norm_y), 1))))
     thresh = 0.16
@@ -640,31 +638,31 @@ if __name__ == '__main__':
     #? Segmentation in 2D
     elif mode == 2:
         for i in range(3): #* Number of demos
-            print(f"Demo {i}")
+            # print(f"Demo {i}")
             segments,demo = main2d(i=i)
             all_segments.append(segments)
             all_demos.append(demo)
-            print(f"Segmentos {i}:", segments)
+            # print(f"Segmentos {i}:", segments)
         # Concatenar todos los segmentos en un solo array
         #all_segments_flat = np.concatenate(all_segments).reshape(-1, 1)
         segments = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2)
         segmentsDbscan = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2, mode="dbscan")
         segmentsKmeans = probabilistically_combine(all_segments, len(demo), 1, n_samples=3, n_pass=2, mode="kmeans")
         #segments = all_segments
-        print('Final Segments')
+        # print('Final Segments')
         # Figura para visualizar los segmentos
 
         fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         all_segments = [segments, segmentsDbscan, segmentsKmeans]
         titles = ["Sliding Window (theirs)", "DBSCAN (mine)", "K Means (mine)"]
-        for ax, segments, title in zip(axes, all_segments, titles):
+        for ax, seg, title in zip(axes, all_segments, titles):
             for j in range(len(all_demos)):
                 demo = all_demos[j]
 
-                for i in range(len(segments) - 1):
+                for i in range(len(seg) - 1):
                     ax.plot(
-                        demo[segments[i]:segments[i+1], 0],
-                        demo[segments[i]:segments[i+1], 1],
+                        demo[seg[i]:seg[i+1], 0],
+                        demo[seg[i]:seg[i+1], 1],
                         lw=5,
                         c=colors[i],
                         label="Segment " + str(i+1) if j == 0 else ""
