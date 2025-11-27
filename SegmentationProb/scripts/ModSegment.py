@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from sklearn.cluster import DBSCAN, KMeans
+from sklearn.metrics import davies_bouldin_score
 
 from utils import *
 import drawData2D as scr2
@@ -372,11 +373,6 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     sorted_keys = np.insert(sorted_keys, 0, 0)
     sorted_keys = np.append(sorted_keys, data_len)
     # print('Sorted Keypoints',sorted_keys)
-    
-    n_seg = 0
-    for list_of_segments in list_of_list_of_segments:
-        n_seg += len(list_of_segments)
-    avg_n_seg = n_seg / len(list_of_list_of_segments)
 
     # ------- ORIGINAL ------------
     if mode == "original":
@@ -419,17 +415,27 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
                     cur_label = labels[i]
         if cur_label is not None:
             final_keys.append(int(np.mean(cur_key_group)))
+        min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys))) * 1.1
     # -----------------------------
 
     # ------ K MEANS --------------
     if mode == "kmeans":
-        k = max(1, int(avg_n_seg/data_len * 300))
-        kmeans = KMeans(n_clusters=k, random_state=42).fit(np.array(sorted_keys).reshape(-1, 1))
-        final_keys = [int(center) for center in sorted(kmeans.cluster_centers_)]
-    # -----------------------------
+        X = np.array(sorted_keys).reshape(-1, 1)
+        db_scores = []
 
-    if mode != "original":
-        min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys))) * 1.1
+        for k in range(2, 11):
+            kmeans = KMeans(n_clusters=k, random_state=42)
+            labels = kmeans.fit_predict(X)
+            
+            db = davies_bouldin_score(X, labels)
+            db_scores.append(db)
+
+        best_k = range(2, 11)[db_scores.index(min(db_scores))]
+        kmeans = KMeans(n_clusters=best_k, random_state=42).fit(np.array(sorted_keys).reshape(-1, 1))
+        final_keys = [int(center) for center in sorted(kmeans.cluster_centers_)]
+        min_dist = 1
+    # -----------------------------
+        
 
     keypoints = np.insert(final_keys, 0, int(0))
     keypoints = np.append(keypoints, int(data_len))
@@ -663,7 +669,7 @@ if __name__ == '__main__':
 
         fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         all_segments = [segments, segmentsDbscan, segmentsKmeans]
-        titles = ["Sliding Window (theirs)", "DBSCAN (mine)", "K Means (mine)"]
+        titles = ["Sliding Window (original)", "DBSCAN", "K Means"]
         for ax, seg, title in zip(axes, all_segments, titles):
             for j in range(len(all_demos)):
                 demo = all_demos[j]
