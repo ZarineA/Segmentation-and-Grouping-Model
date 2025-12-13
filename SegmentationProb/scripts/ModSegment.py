@@ -396,7 +396,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
     
     # ------- DBSCAN --------------
     if mode == "dbscan":
-        epsilon = 2 * data_len/len(peaks)
+        epsilon = 1.8 * data_len/len(peaks)
         final_keys = []
         dbscan = DBSCAN(eps=epsilon, min_samples=n_pass)
         labels = dbscan.fit_predict(np.array(sorted_keys).reshape(-1, 1))

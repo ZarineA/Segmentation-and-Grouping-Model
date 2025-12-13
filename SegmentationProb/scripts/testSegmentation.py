@@ -23,8 +23,16 @@ if __name__ == '__main__':
     all_results[nb_letters]["total_dbscan"] += len(segmentsDbscan) - 1
     all_results[nb_letters]["total_kmeans"] += len(segmentsKmeans) - 1
   
+  error_dbscan = 0
+  error_kmeans = 0
   print("\nLetters\tDBSCAN\tK-Means")
   for nb_letters in sorted(all_results.keys()):
     average_dbscan = all_results[nb_letters]["total_dbscan"] / all_results[nb_letters]["nb_examples"]
     average_kmeans = all_results[nb_letters]["total_kmeans"] / all_results[nb_letters]["nb_examples"]
     print(f"{nb_letters} \t{round(average_dbscan, 2)} \t{round(average_kmeans, 2)}")
+    error_dbscan += abs(nb_letters - average_dbscan)
+    error_kmeans += abs(nb_letters - average_kmeans)
+  
+  print()
+  print("Mean absolute error DBSCAN:", round(error_dbscan / len(all_results), 2))
+  print("Mean absolute error K-MEANS:", round(error_kmeans / len(all_results), 2))
