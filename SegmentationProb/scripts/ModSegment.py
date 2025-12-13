@@ -415,7 +415,7 @@ def probabilistically_combine(list_of_list_of_segments, data_len, window_size, n
                     cur_label = labels[i]
         if cur_label is not None:
             final_keys.append(int(np.mean(cur_key_group)))
-        min_dist = data_len if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys))) * 1.1
+        min_dist = 0 if len(final_keys) <= 1 else min(abs(final_keys[i] - final_keys[i-1]) for i in range(1, len(final_keys))) * 1.1
     # -----------------------------
 
     # ------ K MEANS --------------
