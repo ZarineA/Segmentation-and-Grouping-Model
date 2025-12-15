@@ -20,7 +20,7 @@ Then, navigate to the `SegmentationProb/scripts` folder:
 cd SegmentationProb/scripts
 ```
 
-To run the segmentation algorithm on a demonstration file, using the following command:
+To run the segmentation algorithm on a demonstration file, use the following command:
 
 ```
 python ModSegment.py <file>
@@ -60,8 +60,10 @@ npx expo start
 
 A QR code will appear on the terminal. Scan the QR code with your tablet to launch the app with Expo Go.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./Images/app_dark.PNG">
-  <source media="(prefers-color-scheme: light)" srcset="./Images/app_light.PNG">
-  <img width="600" alt="Stylus Tracker App" src="./Images/app_dark.PNG">
-</picture>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./Images/app_dark.PNG">
+    <source media="(prefers-color-scheme: light)" srcset="./Images/app_light.PNG">
+    <img width="600" alt="Stylus Tracker App" src="./Images/app_dark.PNG">
+  </picture>
+</p>
