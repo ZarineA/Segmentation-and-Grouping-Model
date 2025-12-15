@@ -1,6 +1,7 @@
 import drawData2D as scr2
 from ModSegment import main2d, probabilistically_combine
 import os
+from matplotlib import pyplot as plt
 
 if __name__ == '__main__':
   files = files_only = [f for f in os.listdir("../json files") if ".json" in f]
@@ -25,6 +26,8 @@ if __name__ == '__main__':
   
   error_dbscan = 0
   error_kmeans = 0
+  y_dbscan = []
+  y_kmeans = []
   print("\nLetters\tDBSCAN\tK-Means")
   for nb_letters in sorted(all_results.keys()):
     average_dbscan = all_results[nb_letters]["total_dbscan"] / all_results[nb_letters]["nb_examples"]
@@ -32,7 +35,18 @@ if __name__ == '__main__':
     print(f"{nb_letters} \t{round(average_dbscan, 2)} \t{round(average_kmeans, 2)}")
     error_dbscan += abs(nb_letters - average_dbscan)
     error_kmeans += abs(nb_letters - average_kmeans)
+    y_dbscan.append(average_dbscan)
+    y_kmeans.append(average_kmeans)
   
   print()
   print("Mean absolute error DBSCAN:", round(error_dbscan / len(all_results), 2))
   print("Mean absolute error K-MEANS:", round(error_kmeans / len(all_results), 2))
+
+  x = sorted(all_results.keys())
+  plt.plot(x, y_dbscan, label="DBSCAN")
+  plt.plot(x, y_kmeans, label="K-Means")
+  plt.title("Average number of segments with respect to number of letters in the word")
+  plt.xlabel("Number of letters")
+  plt.ylabel("Average number of segments")
+  plt.legend()
+  plt.show()
